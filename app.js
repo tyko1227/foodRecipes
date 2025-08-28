@@ -110,7 +110,22 @@ document.addEventListener('DOMContentLoaded', () => {
         initCamera();
     });
 
-    // Capture image
+    // 이미지 리사이즈 함수 추가
+    function resizeImage(image, maxWidth = 640, maxHeight = 640) {
+        const canvas = document.createElement('canvas');
+        let { width, height } = image;
+        if (width > maxWidth || height > maxHeight) {
+            const scale = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+        return canvas.toDataURL('image/jpeg', 0.8);
+    }
+
+    // Capture image (수정: 리사이즈 적용)
     captureBtn.addEventListener('click', () => {
         if (!isCameraOn) return;
         
@@ -121,17 +136,18 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        // 이미지 품질을 0.9에서 0.6으로 낮춰 파일 크기를 줄입니다.
-        const imageData = canvas.toDataURL('image/jpeg', 0.6);
-        analyzeImage(imageData);
+        const tempImg = new Image();
+        tempImg.onload = function() {
+            const resizedData = resizeImage(tempImg);
+            analyzeImage(resizedData);
+        };
+        tempImg.src = canvas.toDataURL('image/jpeg', 0.9);
     });
 
-    // Analyze image using Gemini API
+    // Analyze image using Gemini API (수정: 타임아웃 추가)
     async function analyzeImage(imageData) {
-        console.log("Analyzing image...");
         const base64Data = imageData.split(',')[1];
-        // Prompt modification: request the food name to be on the first line only for easier parsing
-        const prompt = '이 이미지는 음식입니다. 한국어로 답변해주세요. 음식의 이름만 첫 줄에 한 줄로 작성하고, 두 번째 줄부터는 이 음식을 만드는 상세한 레시피를 알려주세요. 다른 부가적인 내용은 포함하지 마세요.';
+        const prompt = '이 이미지는 음식입니다. 이 음식의 이름을 알려주세요. 그리고 이 음식을 만드는 상세한 레시피를 알려주세요. 한국어로 답변해주세요.';
 
         const payload = {
             contents: [{
@@ -142,22 +158,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }]
         };
 
+        // 타임아웃 추가 (15초)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("서버 응답이 지연되고 있습니다. 네트워크 상태를 확인해주세요.")), 15000)
+        );
+
         try {
-            const result = await callApiWithBackoff(API_URL, payload);
-            const geminiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+            const result = await Promise.race([
+                callApiWithBackoff(API_URL, payload),
+                timeoutPromise
+            ]);
+            const foodRecipe = result?.candidates?.[0]?.content?.parts?.[0]?.text;
             
-            if (geminiResponse) {
-                // Modified parsing logic: split the first line for the food name, and the rest for the recipe
-                const lines = geminiResponse.trim().split('\n');
-                const foodName = lines[0].trim();
-                const foodRecipe = lines.slice(1).join('\n').trim();
+            if (foodRecipe) {
+                // Extract food name and display recipe
+                const firstLine = foodRecipe.split('\n')[0];
+                const foodNameMatch = firstLine.match(/음식 이름: (.+)/);
+                const foodName = foodNameMatch ? foodNameMatch[1].trim() : "음식";
                 
                 displayGeminiRecipe(foodRecipe, foodName);
             } else {
-                console.error("Gemini API에서 레시피를 가져오지 못했습니다.");
+                loadingIndicator.classList.add('hidden');
+                resultsContainer.innerHTML = '<div class="text-red-500">Gemini API에서 레시피를 가져오지 못했습니다.</div>';
             }
         } catch (error) {
-            console.error("Gemini API 호출 중 오류 발생:", error);
+            loadingIndicator.classList.add('hidden');
+            resultsContainer.innerHTML = `<div class="text-red-500">${error.message || "Gemini API 호출 중 오류 발생"}</div>`;
         }
     }
 
