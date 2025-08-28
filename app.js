@@ -121,12 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
+        // 이미지 품질을 0.9에서 0.6으로 낮춰 파일 크기를 줄입니다.
+        const imageData = canvas.toDataURL('image/jpeg', 0.6);
         analyzeImage(imageData);
     });
 
     // Analyze image using Gemini API
     async function analyzeImage(imageData) {
+        console.log("Analyzing image...");
         const base64Data = imageData.split(',')[1];
         // Prompt modification: request the food name to be on the first line only for easier parsing
         const prompt = '이 이미지는 음식입니다. 한국어로 답변해주세요. 음식의 이름만 첫 줄에 한 줄로 작성하고, 두 번째 줄부터는 이 음식을 만드는 상세한 레시피를 알려주세요. 다른 부가적인 내용은 포함하지 마세요.';
@@ -186,4 +188,3 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayResults() {}
     function displayVideos() {}
 });
-
