@@ -2,15 +2,82 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>음식 분석 웹앱</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts - Inter -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-top: 75%; /* 4:3 Aspect Ratio */
+      border-radius: 1.5rem;
+      overflow: hidden;
+    }
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .result-card {
+      background-color: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
-<body>
-  <video id="video" autoplay></video>
-  <button onclick="captureImage()">촬영</button>
-  <canvas id="canvas" style="display:none"></canvas>
-  <div id="results"></div>
+<body class="bg-gray-100 p-4 min-h-screen flex flex-col items-center">
+  <div class="w-full max-w-lg mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 text-center my-8">음식 분석기</h1>
+
+    <!-- Camera Feed and UI -->
+    <div class="video-container bg-gray-300 flex items-center justify-center mb-6 shadow-lg">
+      <video id="video" class="hidden"></video>
+      <div id="video-placeholder" class="text-gray-500 font-medium text-lg">카메라 대기 중...</div>
+    </div>
+    
+    <!-- Camera Controls -->
+    <div class="flex justify-center items-center space-x-4 mb-8">
+      <!-- Start/Stop Camera Button -->
+      <button id="camera-toggle-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105 active:scale-95">
+        <i class="fas fa-play mr-2"></i>카메라 시작
+      </button>
+
+      <!-- Camera Flip Button (hidden by default) -->
+      <button id="flip-camera-btn" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105 active:scale-95 hidden">
+        <i class="fas fa-sync-alt mr-2"></i>카메라 전환
+      </button>
+    </div>
+
+    <!-- Capture Button (hidden by default) -->
+    <button id="capture-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-full shadow-lg mb-8 transition-transform transform hover:scale-105 active:scale-95 hidden">
+      <i class="fas fa-camera mr-2"></i>음식 촬영
+    </button>
+    
+    <!-- Canvas for Image Capture (hidden) -->
+    <canvas id="canvas" class="hidden"></canvas>
+    
+    <!-- Results Container -->
+    <div id="results" class="space-y-6">
+      <!-- Loading Indicator (initially hidden) -->
+      <div id="loading-indicator" class="hidden flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+        <span class="ml-4 text-lg text-gray-600">분석 중...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript file inclusion -->
   <script src="app.js"></script>
 </body>
 </html>
