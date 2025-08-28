@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Analyze image using Gemini API
     async function analyzeImage(imageData) {
         const base64Data = imageData.split(',')[1];
-        // 프롬프트 수정: 음식 이름을 첫 줄에 단독으로 작성하도록 요청하여 파싱을 용이하게 함
+        // Prompt modification: request the food name to be on the first line only for easier parsing
         const prompt = '이 이미지는 음식입니다. 한국어로 답변해주세요. 음식의 이름만 첫 줄에 한 줄로 작성하고, 두 번째 줄부터는 이 음식을 만드는 상세한 레시피를 알려주세요. 다른 부가적인 내용은 포함하지 마세요.';
 
         const payload = {
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const geminiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text;
             
             if (geminiResponse) {
-                // 수정된 파싱 로직: 첫 번째 줄을 음식 이름으로, 나머지를 레시피로 분리
+                // Modified parsing logic: split the first line for the food name, and the rest for the recipe
                 const lines = geminiResponse.trim().split('\n');
                 const foodName = lines[0].trim();
                 const foodRecipe = lines.slice(1).join('\n').trim();
