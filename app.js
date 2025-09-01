@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gemini API settings
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
-    const API_KEY = "AIzaSyCGBRtn7PSq6D5QOkP4_LjVYBpPs2XBk5A"; // Canvas will automatically provide the API key
+    const API_KEY = ""; // Canvas will automatically provide the API key
     const RETRY_DELAY_MS = 1000;
     const MAX_RETRIES = 5;
 
@@ -214,3 +214,4 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayResults() {}
     function displayVideos() {}
 });
+
